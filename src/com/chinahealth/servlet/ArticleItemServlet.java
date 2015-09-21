@@ -16,6 +16,8 @@ import com.chinahealth.dao.ArticleItemDao;
 @WebServlet("/articleitems")
 public class ArticleItemServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private static final int ONCE_LOAD_NUM = 10;
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -31,9 +33,13 @@ public class ArticleItemServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String dataStatus = request.getParameter(ServerParam.DATA_STATUS);
+		String onceLoadNumParm = request.getParameter(ServerParam.ONCE_LOAD_NUM);
+		int onceLoadNum = ONCE_LOAD_NUM;
+		if(onceLoadNumParm != null)
+			onceLoadNum = Integer.valueOf(onceLoadNumParm);
 		String requestJson = request.getParameter(ServerParam.REQUEST_JSON);
 		
-		String articleItemsJson = new ArticleItemDao().getAritileItems(requestJson, dataStatus);
+		String articleItemsJson = new ArticleItemDao().getAritileItems(requestJson, dataStatus, onceLoadNum);
 		
 		response.setContentType("application/json;charset=UTF-8");  
 		response.getWriter().write(articleItemsJson);

@@ -14,7 +14,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 public class ArticleItemDao {
-	private int onceLoadCount = 8;
+	private int maxOnceLoadCount = 50;
 
 	/**
 	 * get article items' data base on request json
@@ -24,9 +24,9 @@ public class ArticleItemDao {
 	 *            "publishTime":321321421}
 	 * @return
 	 */
-	public String getAritileItems(String requestJson, String dataStatus) {
+	public String getAritileItems(String requestJson, String dataStatus, int onceLoadNum) {
 		String resultJson = "";
-		String selectSQL = createSelectSQL(requestJson, dataStatus);
+		String selectSQL = createSelectSQL(requestJson, dataStatus, onceLoadNum);
 		Connection con = DatabaseManager.getInstance().getConnection();
 		Statement statement = null;
 		ResultSet rs = null;
@@ -75,12 +75,13 @@ public class ArticleItemDao {
 		return resultJson;
 	}
 
-	private String createSelectSQL(String requestJson, String dataStatus) {
+	private String createSelectSQL(String requestJson, String dataStatus, int onceLoadNum) {
 		int offset = 0;
 		String selectSQL = "";
 		String whereCondition = "";
 
 		int groupType = 0;
+		onceLoadNum = onceLoadNum > maxOnceLoadCount ? maxOnceLoadCount : onceLoadNum;
 		String articleUid = null;
 		Long publishTime = null;
 		try {
@@ -106,12 +107,12 @@ public class ArticleItemDao {
 		if (groupType == 0) {
 			whereCondition = whereCondition == "" ? whereCondition : ("WHERE " + whereCondition);
 			selectSQL = "SELECT * FROM " + ArticleItemTable.TABLE_NAME + " " + whereCondition + "ORDER BY "
-					+ ArticleItemTable.PUBLISH_TIME + " DESC " + "LIMIT " + onceLoadCount + " OFFSET " + offset;
+					+ ArticleItemTable.PUBLISH_TIME + " DESC " + "LIMIT " + onceLoadNum + " OFFSET " + offset;
 		} else {
 			whereCondition = whereCondition == "" ? ("WHERE " + ArticleItemTable.GROUP_TYPE + "=" + groupType + " ")
 					: ("WHERE " + ArticleItemTable.GROUP_TYPE + "=" + groupType + " AND " + whereCondition);
 			selectSQL = "SELECT * FROM " + ArticleItemTable.TABLE_NAME + " " + whereCondition + "ORDER BY "
-					+ ArticleItemTable.PUBLISH_TIME + " DESC " + "LIMIT " + onceLoadCount + " OFFSET " + offset;
+					+ ArticleItemTable.PUBLISH_TIME + " DESC " + "LIMIT " + onceLoadNum + " OFFSET " + offset;
 		}
 		return selectSQL;
 	}
